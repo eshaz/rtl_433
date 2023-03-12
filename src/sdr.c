@@ -1306,6 +1306,30 @@ int sdr_set_tuner_gain(sdr_dev_t *dev, char const *gain_str, int verbose)
 
     /* Set the tuner gain */
     gain = rtlsdr_find_tuner_gain(dev, gain, verbose);
+
+    /* Fix for FitiPower FC0012 to correct gain */
+    if (rtlsdr_get_tuner_type(dev->rtlsdr_dev) == RTLSDR_TUNER_FC0012) {
+        int minGain = -99;
+
+        int count = rtlsdr_get_tuner_gains(dev->rtlsdr_dev, NULL);
+        if (count <= 0) {
+            if (verbose) print_log(LOG_WARNING, __func__, "Failed to read supported minimum gain.");
+        } else {
+            int *gains = malloc(count * sizeof(int));
+            count = rtlsdr_get_tuner_gains(dev->rtlsdr_dev, gains);
+            minGain = gains[0];
+            free(gains);
+        }
+
+        r = rtlsdr_set_tuner_gain(dev->rtlsdr_dev, minGain);
+        if (verbose) {
+            if (r < 0)
+                print_log(LOG_WARNING, __func__, "Failed to set initial gain.");
+            else
+                print_logf(LOG_NOTICE, "SDR", "Set initial gain for FC0012 to %f dB.", minGain / 10.0);
+        }
+    }
+
     r = rtlsdr_set_tuner_gain(dev->rtlsdr_dev, gain);
     if (verbose) {
         if (r < 0)
