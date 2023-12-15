@@ -259,7 +259,7 @@
     DECL(bresser_lightning) \
     DECL(schou_72543_rain) \
     DECL(grill_thermometer) \
-    DECL(audiovox_avx1b4s) \
+    DECL(audiovox_car_remote) \
 
     /* Add new decoders here. */
 
